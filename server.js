@@ -1,20 +1,31 @@
-// server.js
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 
 const app = express();
+
+// ✅ Allow only your frontend domain here
+const FRONTEND_URL = "https://super-smakager-c8ae31.netlify.app";
+
+app.use(cors({
+  origin: FRONTEND_URL,
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
 const server = http.createServer(app);
+
 const io = new Server(server, {
   cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
+    origin: FRONTEND_URL,
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 
-const rooms = {}; // track socket ids by roomId
-
+// Rest of your code remains same
+const rooms = {};
 io.on('connection', (socket) => {
   console.log('a user connected:', socket.id);
 
@@ -24,7 +35,6 @@ io.on('connection', (socket) => {
     }
 
     const users = rooms[roomId];
-
     if (users.length >= 2) {
       return callback({ success: false, message: 'Room full or invalid' });
     }
@@ -57,7 +67,7 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000; // ✅ Use this for Render
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
